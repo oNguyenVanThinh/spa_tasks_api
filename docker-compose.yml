@@ -1,0 +1,28 @@
+version: '2'
+
+volumes:
+  db-data:
+    external: false
+
+services:
+  db:
+    build: ./docker/images/db
+    ports:
+      - 5432:5432
+    volumes:
+      - db-data:/var/lib/psql/db-data
+  app:
+    build: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - 3001:3001
+    command: docker/wait-for-it.sh db:5432 -- docker/entrypoint
+    depends_on:
+      - db
+  nginx:
+    build: ./docker/images/nginx
+    ports:
+      - 80:80
+    depends_on:
+      - app
